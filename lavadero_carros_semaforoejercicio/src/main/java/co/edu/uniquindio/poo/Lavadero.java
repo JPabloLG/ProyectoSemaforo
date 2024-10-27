@@ -2,30 +2,45 @@ package co.edu.uniquindio.poo;
 
 import java.util.concurrent.Semaphore;
 
-public class Lavadero {
-    private final Semaphore semaforo;
+public class Lavadero extends Thread{
+    private String nombre;
+    Semaphore trabajador = new Semaphore(5);
 
-    public Lavadero(int espacios) {
-        // Inicializamos el semáforo con la cantidad máxima de espacios disponibles
-        this.semaforo = new Semaphore(espacios);
+    public Lavadero(String nombre){
+        this.nombre = nombre;
     }
 
-    public void lavarAuto(String auto) {
-        try {
-            System.out.println(auto + " está esperando para entrar al lavadero.");
-            // Adquirimos un permiso para entrar al lavadero
-            semaforo.acquire();
-            synchronized (this) {
-                System.out.println(auto + " está siendo lavado.");
-                // Simulamos el tiempo que toma lavar el auto
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    @Override
+    public void run() {
+        for(int i = 1; i <= 10; i++){
+            Carro carro = new Carro("Carro " + i, this);
+            carro.start();
+
+            try {
                 Thread.sleep(2000);
-                System.out.println(auto + " ha terminado de ser lavado.");
+            } catch (InterruptedException e){
+                e.printStackTrace();
             }
+        }
+    }
+
+    public void lavarAuto(){
+        try {
+            trabajador.acquire();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            // Liberamos el permiso para que otro auto pueda entrar
-            semaforo.release();
         }
+    }
+
+    public void terminarLavado(){
+        trabajador.release();
     }
 }
